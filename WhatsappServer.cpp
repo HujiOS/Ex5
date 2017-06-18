@@ -9,34 +9,50 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <bfd.h>
+#include <iostream>
+
+#define STDIN 0
 
 using namespace std;
-static vector<string> rmsgs;
-static map<int,vector<string>> msgs;
+static vector<int> clientSocks;
+static vector<int> deletedSockes;
+static map<int, string> clientNickNames;
 //the thread function
-void *connection_handler(void *);
 
-int main(int argc , char *argv[])
-{
-    int socket_desc , client_sock , c , *new_sock;
-    struct sockaddr_in server , client;
+void sendMsg(int socketId, string msg){
+   return;
+}
+void handleSysErr(string errCall, int errNu){
+    std::cout<< "ERROR: "<<errCall<<" "<< errNu <<"."<<std::endl;
+    exit(1);
+}
+
+int main(int argc, char *argv[]) {
+    int socket_desc, new_sock, sd, valread;
+    char buffer[1025];
+    fd_set active_fd_set;
+    FD_ZERO(&active_fd_set);
+    struct sockaddr_in address;
 
     //Create socket
-    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (socket_desc == -1)
-    {
+    socket_desc = socket(AF_INET, SOCK_STREAM, 0);
+    if (socket_desc == -1) {
         printf("Could not create socket");
     }
     puts("Socket created");
 
     //Prepare the sockaddr_in structure
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(8888);
+    int yes = 1;
+    if (setsockopt(socket_desc, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        perror("setsockopt");
+    }
 
     //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
-    {
+    if (bind(socket_desc, (struct sockaddr *) &address, sizeof(address)) < 0) {
         //print the error message
         perror("bind failed. Error");
         return 1;
@@ -44,71 +60,68 @@ int main(int argc , char *argv[])
     puts("bind done");
 
     //Listen
-    listen(socket_desc , 30);
+    listen(socket_desc, 5);
 
     //Accept and incoming connection
-    puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
-    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
-    {
-        puts("Connection accepted");
-
-        pthread_t sniffer_thread;
-        new_sock = (int*)malloc(sizeof(1));
-        *new_sock = client_sock;
-
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
-        {
-            perror("could not create thread");
-            return 1;
+    int k = sizeof(address);
+    int retval;
+    while (1 == yes) {
+        int maxSocket = socket_desc;
+        FD_ZERO(&active_fd_set);
+        FD_SET(socket_desc, &active_fd_set);
+        FD_SET(STDIN, &active_fd_set);
+        // defining the io-sockets
+        for (int i = 0; i < clientSocks.size(); ++i) {
+            FD_SET(clientSocks[i], &active_fd_set);
+            if (clientSocks[i] > maxSocket) maxSocket = clientSocks[i];
         }
-        //Now join the thread , so that we dont terminate before the thread
-//        pthread_join( sniffer_thread , NULL);
-        puts("Handler assigned");
-    }
+        retval = select(maxSocket + 1, &active_fd_set, NULL, NULL, NULL);
+        if ((retval < 0) && (errno != EINTR)) {
+            printf("Select Error\n");
+        }
+        if (FD_ISSET(socket_desc, &active_fd_set)) {
+            if ((new_sock = accept(socket_desc, (struct sockaddr *) &address, (socklen_t *) &k)) < 0) {
+                perror("Error open new socket");
+            }
+            if (send(new_sock, "ok", 2, 0) != 2) {
+                perror("Wrong length");
+            }
+            printf("New client connected \n");
+            clientSocks.push_back(new_sock);
+        }
+        if (FD_ISSET(STDIN, &active_fd_set)){
+            std::string line;
+            std::getline( std::cin, line );
+            cout << line;
+        }
 
-    if (client_sock < 0)
-    {
-        perror("accept failed");
-        return 1;
+        // check sockets for new input
+        for (int i = 0; i < clientSocks.size(); ++i) {
+            sd = clientSocks[i];
+            if (FD_ISSET(sd, &active_fd_set)) {
+                if ((valread = read(sd, buffer, 1024)) == 0) {
+                    // client disconnected.
+                    close(sd);
+                    deletedSockes.push_back(i);
+                } else if(valread > 0){
+                    // got new msg from sd.
+                    buffer[valread] = '\0';
+                    std::cout << buffer << " Received from socket number #" << sd << std::endl;
+                    std::flush(std::cout);
+                    send(sd, buffer, strlen(buffer), 0);
+                } else {
+                    handleSysErr("read", errno);
+                }
+
+            }
+        }
+        // erase deleted sockets
+        while (deletedSockes.size() != 0) {
+            clientSocks.erase(clientSocks.begin() + deletedSockes.back());
+            deletedSockes.pop_back();
+        }
     }
 
     return 0;
 }
 
-/*
- * This will handle connection for each client
- * */
-void *connection_handler(void *socket_desc)
-{
-    //Get the socket descriptor
-    int sock = *(int*)socket_desc;
-    int read_size;
-    char client_message[2000] = {0};
-    bzero(client_message, sizeof(client_message));
-    //Receive a message from client
-    while( (read_size = recv(sock , client_message , 2000 , 0)) > 0 )
-    {
-        //Send the message back to client
-        printf(client_message);
-        string clientMessage(client_message);
-        write(sock , clientMessage.c_str() , clientMessage.size());
-        msgs[sock].push_back(client_message);
-        bzero(client_message, sizeof(client_message));
-    }
-
-    if(read_size == 0)
-    {
-        puts("Client disconnected");
-        fflush(stdout);
-    }
-    else if(read_size == -1)
-    {
-        perror("recv failed");
-    }
-
-    //Free the socket pointer
-    free(socket_desc);
-
-    return 0;
-}

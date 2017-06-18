@@ -6,12 +6,19 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <stdlib.h>
+
+#define STDIN 0
 using namespace std;
+void handleSysErr(string,int);
 int main(int argc , char *argv[])
 {
-    int sock;
+    int sock, readVal;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
+    char message[1024];
+    int y = 1;
+    string helloMsg = "Hello";
+    fd_set active_fd_set;
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -31,34 +38,53 @@ int main(int argc , char *argv[])
         perror("connect failed. Error");
         return 1;
     }
+    int r = send(sock, helloMsg.c_str(), helloMsg.size(),0);
+
 
     puts("Connected\n");
 
     //keep communicating with server
-    while(1)
+     // stdin
+    while(1 == y)
     {
-        string input = "";
-        printf("Enter message : ");
-        getline(cin, input);
-
-        //Send some data
-        if( send(sock , input.c_str() , input.size() , 0) < 0)
-        {
-            puts("Send failed");
-            return 1;
+        FD_ZERO(&active_fd_set);
+        FD_SET(sock, &active_fd_set);
+        FD_SET(STDIN, &active_fd_set);
+        string line;
+        int ret = select(sock+1,&active_fd_set,NULL,NULL,NULL);
+        if((ret<0) && (errno != EINTR)){
+            handleSysErr("select",errno);
         }
-
-        //Receive a reply from the server
-        if( recv(sock , server_reply , 2000 , 0) < 0)
-        {
-            puts("recv failed");
-            break;
+        if(FD_ISSET(STDIN, &active_fd_set)){
+            getline(std::cin, line);
+            if(send(sock, line.c_str(), line.size(), 0) != line.size()){
+                handleSysErr("send",errno);
+            }
         }
-
-        puts("Server reply :");
-        puts(server_reply);
+        if(FD_ISSET(sock, &active_fd_set)){
+            if ((readVal = read(sock, message, 1024)) == 0) {
+                // client disconnected.
+                if(close(sock) < 0){
+                    handleSysErr("close", errno);
+                }
+            } else if(readVal > 0){
+                // got new msg from sd.
+                message[readVal] = '\0';
+                std::cout << message << std::endl;
+                std::flush(std::cout);
+            } else{
+                handleSysErr("read", errno);
+            }
+        }
     }
 
     close(sock);
     return 0;
+}
+
+
+
+void handleSysErr(string errCall, int errNu){
+    std::cout<< "ERROR: "<<errCall<<" "<< errNu <<"."<<std::endl;
+    exit(1);
 }

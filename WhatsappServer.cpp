@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Constants.h"
+//#include "Constants.h"
 
 #define ERR -1
 #include <bfd.h>
@@ -37,38 +37,13 @@ void handleSysErr(string errCall, int errNu){
     exit(1);
 }
 
-int main(int argc, char *argv[]) {
-    int socket_desc, new_sock, sd, valread;
-    char buffer[1025];
-    fd_set active_fd_set;
-    FD_ZERO(&active_fd_set);
-    struct sockaddr_in address;
-
-int incoming_message(int sid, string s)
-{
-    if(!is_msg_legal(s)) return ERR;
-    vector<string> tokens = parse_delim(s, ' ');
-
-    switch(msgs_to_enum[tokens[0]])
-    {
-        case CREATE_GROUP:
-
-        case SEND:
-
-        case WHO:
-
-        case EXIT:
-
-        default:
-            break;
-    }
-}
-
 
 int main(int argc , char *argv[])
 {
-    int socket_desc , client_sock , c , *new_sock;
-    struct sockaddr_in server , client;
+    int socket_desc, new_sock, sd, valread;
+    struct sockaddr_in address;
+    char buffer[1025];
+    fd_set active_fd_set;
 
     //Create socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -160,4 +135,5 @@ int main(int argc , char *argv[])
     //Free the socket pointer
     return 0;
 }
+
 

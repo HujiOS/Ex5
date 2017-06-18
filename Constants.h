@@ -10,8 +10,8 @@ using namespace std;
 #include <iterator>
 #include <sstream>
 #include <map>
-#include <regex>
 #include <iostream>
+#include <regex>
 
 
 enum msg_types{
@@ -47,26 +47,25 @@ bool is_msg_legal(string s)
 {
     cmatch m;
     vector<string> tokens = parse_delim(s, ' ');
+    vector<string> names;
     if(tokens.size() < 0 || msgs_to_enum.find(tokens[0]) == msgs_to_enum.end()) return false;
     string s1 = tokens[0];
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:
             if(tokens.size() < 3) return false;
-            if (!match_regex(tokens[1], m, digit_nums_only)) return false;
-            vector<string> names = parse_delim(tokens[2], ',');
+            if (!regex_match(tokens[1].c_str(), m, digit_nums_only)) return false;
+             names = parse_delim(tokens[2], ',');
             for(string name: names)
             {
-                if (!match_regex(name, m, digit_nums_only)) return false;
+                if (!regex_match(name.c_str(), m, digit_nums_only)) return false;
             }
 
             //TODO: check if there are extra params?
             return true;
         case SEND:
             if(tokens.size() < 3) return false;
-            if (!match_regex(tokens[1], m, digit_nums_only)) return false;
-            return true;
-            break;
+            return regex_match(tokens[1].c_str(), m, digit_nums_only);
         case WHO:
             return true;
         case EXIT:

@@ -60,7 +60,10 @@ int main(int argc , char *argv[])
         }
         if(FD_ISSET(STDIN, &active_fd_set)){
             getline(std::cin, line);
-            if(send(sock, line.c_str(), line.size(), 0) != line.size()){
+            if(!is_msg_legal(line)){
+                cout << "Message illegal!"<< endl;
+            }
+            else if(send(sock, line.c_str(), line.size(), 0) != line.size()){
                 handleSysErr("send",errno);
             }
         }

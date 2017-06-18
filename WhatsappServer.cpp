@@ -9,12 +9,21 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "Constants.h"
+
+#define ERR -1
 #include <bfd.h>
 #include <iostream>
 
 #define STDIN 0
 
 using namespace std;
+static vector<string> rmsgs;
+static map<int,vector<string>> msgs;
+static map<int,string> socket_to_nic;
+static map<string,int> nic_to_socket;
+static map<string, vector<string>> groups;
+
 static vector<int> clientSocks;
 static vector<int> deletedSockes;
 static map<int, string> clientNickNames;
@@ -34,6 +43,32 @@ int main(int argc, char *argv[]) {
     fd_set active_fd_set;
     FD_ZERO(&active_fd_set);
     struct sockaddr_in address;
+
+int incoming_message(int sid, string s)
+{
+    if(!is_msg_legal(s)) return ERR;
+    vector<string> tokens = parse_delim(s, ' ');
+
+    switch(msgs_to_enum[tokens[0]])
+    {
+        case CREATE_GROUP:
+
+        case SEND:
+
+        case WHO:
+
+        case EXIT:
+
+        default:
+            break;
+    }
+}
+
+
+int main(int argc , char *argv[])
+{
+    int socket_desc , client_sock , c , *new_sock;
+    struct sockaddr_in server , client;
 
     //Create socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -122,6 +157,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    //Free the socket pointer
     return 0;
 }
 

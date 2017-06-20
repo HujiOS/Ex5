@@ -68,7 +68,7 @@ int main(int argc , char *argv[])
         if(FD_ISSET(STDIN, &active_fd_set)){
             getline(std::cin, line);
             if(!is_msg_legal(line, nickname)){
-                cout << "Message illegal!"<< endl;
+                cerr << "Invalid input."<< endl;
             }
             else{
                 sendMsg(sock, line);

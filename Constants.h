@@ -13,6 +13,9 @@ using namespace std;
 #include <iostream>
 #include <regex>
 
+#define ERR -1
+#define SUCCESS 0
+#define TIMEOUT -2
 
 enum msg_types{
 CREATE_GROUP, SEND, WHO, EXIT, HELLO
@@ -43,9 +46,10 @@ vector<string> parse_delim(string s, char delim)
     return tokens;
 }
 
-bool is_msg_legal(string s)
+bool is_msg_legal(string s, string sender)
 {
     cmatch m;
+    bool got_names = false;
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
     if(tokens.size() < 0 || msgs_to_enum.find(tokens[0]) == msgs_to_enum.end()) return false;
@@ -53,23 +57,30 @@ bool is_msg_legal(string s)
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:
-            if(tokens.size() < 3) return false;
+            if(tokens.size() < 3 || tokens.size() > 3) return false;
             if (!regex_match(tokens[1].c_str(), m, digit_nums_only)) return false;
              names = parse_delim(tokens[2], ',');
             for(string name: names)
             {
                 if (!regex_match(name.c_str(), m, digit_nums_only)) return false;
+                got_names = true;
             }
-
+            if(!got_names) return false;
             //TODO: check if there are extra params?
             return true;
         case SEND:
-            if(tokens.size() < 3) return false;
+            if(tokens.size() < 3 || tokens.size() > 3) return false;
+            if(sender == tokens[1]) return false;
             return regex_match(tokens[1].c_str(), m, digit_nums_only);
         case WHO:
+            if (tokens.size()!=1) return false;
             return true;
         case EXIT:
+            if (tokens.size()!=1) return false;
             return true;
+        case HELLO:
+            if (tokens.size()!=2) return false;
+            return regex_match(tokens[1].c_str(), m, digit_nums_only);
         default:
             return false;
     }

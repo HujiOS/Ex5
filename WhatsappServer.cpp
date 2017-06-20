@@ -9,13 +9,17 @@
 #include <string>
 #include <vector>
 #include <map>
-//#include "Constants.h"
+#include "Constants.h"
 
-#define ERR -1
 #include <bfd.h>
 #include <iostream>
 
+#define ERR_MSG string("ERROR:")
 #define STDIN 0
+#define MSG_END string(".\n")
+#define GROUP_SUCC(group) string("Group ") +string("\"")+ group + string("\"")+string(" was created successfully") + MSG_END
+#define GROUP_ERR(group) ERR_MSG + string(" failed to create group ") + string("\"") + group + string("\"") + MSG_END
+
 
 using namespace std;
 static vector<string> rmsgs;
@@ -29,9 +33,70 @@ static vector<int> deletedSockes;
 static map<int, string> clientNickNames;
 //the thread function
 
-void sendMsg(int socketId, string msg){
-   return;
+int sendMsg(int socketId, string msg){
+   return 8;
 }
+
+int create_group(string group_name, vector<string> user_names)
+{
+    if(groups.find(group_name) != groups.end()) return ERR;
+    if(nic_to_socket.find(group_name) != groups.end()) return ERR;
+
+    sort(user_names.begin(), user_names.end());
+    user_names.erase(unique(user_names.begin(), user_names.end()), user_names.end());
+
+    if(user_names.size() <= 1) return ERR;
+
+    groups[group_name] = user_names;
+
+    return SUCCESS;
+}
+
+int send_to_user(string user, string msg)
+{
+
+}
+
+int send_to_target(string name, string msg)
+{
+
+}
+
+int parse_incoming(int sid, string s)
+{
+    cmatch m;
+    vector<string> tokens = parse_delim(s, ' ');
+
+    string s1 = tokens[0];
+    switch(msgs_to_enum[s1])
+    {
+        case CREATE_GROUP:
+            vector<string> names = parse_delim(tokens[2], ',');
+            names.push_back(socket_to_nic[sid]);
+            if(create_group(tokens[1], names) != SUCCESS)
+            {
+                sendMsg(sid, GROUP_ERR(tokens[1]));
+                cerr << socket_to_nic[sid] << ":" << GROUP_ERR(tokens[1]);
+                return ERR;
+            }
+            sendMsg(sid, GROUP_SUCC(tokens[1]));
+            cout << socket_to_nic[sid] << ":" << GROUP_SUCC(tokens[1]);
+            //TODO: anything else?
+            return SUCCESS;
+
+        case SEND:
+            if(send_to_target(tokens[1], tokens[2]) != SUCCESS) return false;
+        case HELLO:
+
+
+        case WHO:
+
+        case EXIT:
+        default:
+    }
+}
+
+
 void handleSysErr(string errCall, int errNu){
     std::cout<< "ERROR: "<<errCall<<" "<< errNu <<"."<<std::endl;
     exit(1);

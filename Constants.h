@@ -141,11 +141,10 @@ string readMessage(int socket) {
     cout << "Message Received! " << word << endl;
     return word;
 }
-
-void sendMessage(int socket, string msg) {
+int confirmWithTimeout(int socket);
+int sendMsg(int socket, string msg) {
     string fmsg = "";
-    char tBuff[256];
-    int rb;
+    int confirmationCode;
     if (msg.size() > 9999) {
         // Error we cant send messages longer than 9999 bytes.
         msg = msg.substr(0, 9998); // we will trim it madafaka!$@
@@ -155,12 +154,57 @@ void sendMessage(int socket, string msg) {
     if(send(socket, fmsg.c_str(), fmsg.size(), 0) != fmsg.size()){
         handleSysErr("send",errno);
     }
-    if((rb = read(socket, tBuff, 256)) < 0){
-        handleSysErr("read",errno);
+    confirmationCode = confirmWithTimeout(socket);
+    if(confirmationCode == TIMEOUT){
+        cout << "Tried to send message, got timeout instead of okay :( " << endl;
+        return TIMEOUT;
+    } else if(confirmationCode == ERR){
+        cout << "Tried to send message, got other message, not OK :(" << endl;
+        return ERR;
+    } else {
+        cout << "Message sent successfuly" << endl;
+        return SUCCESS;
     }
-    tBuff[rb] = '\0';
-    if (strcmp(OKAY_MESSAGE,tBuff)) {
-        cout << "Error receiveing the okay response.. check it out intenally..." << endl;
+}
+
+int sendMsg(int socket, string msg, bool force){
+    if(force){
+        while(sendMsg(socket, msg) < 0){}
+    }
+    sendMsg(socket, msg);
+    return 0;
+}
+
+
+
+int confirmWithTimeout(int socket){
+    fd_set set;
+    struct timeval timeout;
+    char tBuff[256];
+    int rv, rb;
+    FD_ZERO(&set); /* clear the set */
+    FD_SET(socket, &set); /* add our file descriptor to the set */
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 5000;
+    rv = select(socket + 1 , &set, NULL, NULL, &timeout);
+    if(rv == -1){
+        handleSysErr("select",errno);
+    }
+    if(rv == 0){
+        return TIMEOUT;
+    } else {
+        rb = read(socket, tBuff, 256);
+        if(rb < 0){
+            handleSysErr("read", errno);
+            return 0; // useless line..
+        } else {
+            tBuff[rb] = '\0';
+            if(strcmp(tBuff, OKAY_MESSAGE)){
+                return ERR;
+            } else {
+                return SUCCESS;
+            }
+        }
     }
 }
 

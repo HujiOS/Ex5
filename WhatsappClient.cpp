@@ -13,6 +13,10 @@
 
 #define STDIN 0
 using namespace std;
+
+static string nickname;
+static string ip;
+static string port;
 void handleSysErr(string,int);
 int main(int argc , char *argv[])
 {
@@ -21,29 +25,33 @@ int main(int argc , char *argv[])
     char message[1024];
     int y = 1;
     fd_set active_fd_set;
+    if(argc < 4){
+        std::cerr << "Usage: whatsappClient clientName serverAddress serverPort" << endl;
+        exit(1);
+    }
+    nickname = string(argv[1]);
+    ip = string(argv[2]);
+    port = string(argv[3]);
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
     {
-        printf("Could not create socket");
+        handleSysErr("socket",errno);
     }
-    puts("Socket created");
-
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_addr.s_addr = inet_addr(ip.c_str());
     server.sin_family = AF_INET;
-    server.sin_port = htons( 8888 );
-
+    server.sin_port = htons( stoi(port) );
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
-        perror("connect failed. Error");
+        handleSysErr("connect",errno);
         return 1;
     }
-    sendMessage(sock, HELLO_MSG+" myName");
+    sendMsg(sock, HELLO_MSG+" "+nickname);
 
 
-    puts("Connected\n");
+    cout << "Connected successfully." << endl;
 
     //keep communicating with server
      // stdin
@@ -59,11 +67,11 @@ int main(int argc , char *argv[])
         }
         if(FD_ISSET(STDIN, &active_fd_set)){
             getline(std::cin, line);
-            if(!is_msg_legal(line)){
+            if(!is_msg_legal(line, nickname)){
                 cout << "Message illegal!"<< endl;
             }
             else{
-                sendMessage(sock, line);
+                sendMsg(sock, line);
             }
         }
         if(FD_ISSET(sock, &active_fd_set)){

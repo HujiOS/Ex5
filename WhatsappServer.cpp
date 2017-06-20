@@ -33,14 +33,10 @@ static vector<int> deletedSockes;
 static map<int, string> clientNickNames;
 //the thread function
 
-int sendMsg(int socketId, string msg){
-   return 8;
-}
-
 int create_group(string group_name, vector<string> user_names)
 {
     if(groups.find(group_name) != groups.end()) return ERR;
-    if(nic_to_socket.find(group_name) != groups.end()) return ERR;
+    if(nic_to_socket.find(group_name) != nic_to_socket.end()) return ERR;
 
     sort(user_names.begin(), user_names.end());
     user_names.erase(unique(user_names.begin(), user_names.end()), user_names.end());
@@ -66,12 +62,13 @@ int parse_incoming(int sid, string s)
 {
     cmatch m;
     vector<string> tokens = parse_delim(s, ' ');
+    vector<string> names;
 
     string s1 = tokens[0];
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:
-            vector<string> names = parse_delim(tokens[2], ',');
+            names = parse_delim(tokens[2], ',');
             names.push_back(socket_to_nic[sid]);
             if(create_group(tokens[1], names) != SUCCESS)
             {
@@ -93,13 +90,8 @@ int parse_incoming(int sid, string s)
 
         case EXIT:
         default:
+            break;
     }
-}
-
-
-void handleSysErr(string errCall, int errNu){
-    std::cout<< "ERROR: "<<errCall<<" "<< errNu <<"."<<std::endl;
-    exit(1);
 }
 
 
@@ -108,6 +100,10 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in address;
     string msg;
     fd_set active_fd_set;
+    if(argc < 2){
+        std::cerr << "Usage: whatsappServer portNum" << endl;
+        exit(1);
+    }
 
     //Create socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -178,7 +174,7 @@ int main(int argc, char *argv[]) {
                 } else if(msg == ERR_MSG){
                     handleSysErr("read", errno);
                 } else {
-                    //TODO Handle Message, send it to Gal.
+                    parse_incoming(sd, msg);
                 }
 
             }

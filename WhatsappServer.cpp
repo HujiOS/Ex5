@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Constants.h"
 
 #include <bfd.h>
 #include <iostream>
+#include "Constants.h"
 
 #define ERR_MSG string("ERROR:")
 #define STDIN 0
@@ -23,9 +23,9 @@
 
 using namespace std;
 static vector<string> rmsgs;
-static map<int,vector<string>> msgs;
-static map<int,string> socket_to_nic;
-static map<string,int> nic_to_socket;
+static map<int, vector<string>> msgs;
+static map<int, string> socket_to_nic;
+static map<string, int> nic_to_socket;
 static map<string, vector<string>> groups;
 
 static vector<int> clientSocks;
@@ -103,11 +103,10 @@ void handleSysErr(string errCall, int errNu){
 }
 
 
-int main(int argc , char *argv[])
-{
+int main(int argc, char *argv[]) {
     int socket_desc, new_sock, sd, valread;
     struct sockaddr_in address;
-    char buffer[1025];
+    string msg;
     fd_set active_fd_set;
 
     //Create socket
@@ -156,36 +155,30 @@ int main(int argc , char *argv[])
         }
         if (FD_ISSET(socket_desc, &active_fd_set)) {
             if ((new_sock = accept(socket_desc, (struct sockaddr *) &address, (socklen_t *) &k)) < 0) {
-                perror("Error open new socket");
+                handleSysErr("accept", errno);
             }
-            if (send(new_sock, "ok", 2, 0) != 2) {
-                perror("Wrong length");
-            }
-            printf("New client connected \n");
             clientSocks.push_back(new_sock);
         }
-        if (FD_ISSET(STDIN, &active_fd_set)){
+        if (FD_ISSET(STDIN, &active_fd_set)) {
             std::string line;
-            std::getline( std::cin, line );
-            cout << line;
+            std::getline(std::cin, line);
+            cout << line << endl;
         }
 
         // check sockets for new input
         for (int i = 0; i < clientSocks.size(); ++i) {
             sd = clientSocks[i];
             if (FD_ISSET(sd, &active_fd_set)) {
-                if ((valread = read(sd, buffer, 1024)) == 0) {
-                    // client disconnected.
-                    close(sd);
+                msg = readMessage(sd);
+                if (msg == LEAVE_MESSAGE) {
+                    // TODO Handle Exit
                     deletedSockes.push_back(i);
-                } else if(valread > 0){
-                    // got new msg from sd.
-                    buffer[valread] = '\0';
-                    std::cout << buffer << " Received from socket number #" << sd << std::endl;
-                    std::flush(std::cout);
-                    send(sd, buffer, strlen(buffer), 0);
-                } else {
+                    close(sd);
+                    continue;
+                } else if(msg == ERR_MSG){
                     handleSysErr("read", errno);
+                } else {
+                    //TODO Handle Message, send it to Gal.
                 }
 
             }

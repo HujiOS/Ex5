@@ -20,7 +20,6 @@ int main(int argc , char *argv[])
     struct sockaddr_in server;
     char message[1024];
     int y = 1;
-    string helloMsg = "Hello";
     fd_set active_fd_set;
 
     //Create socket
@@ -41,7 +40,7 @@ int main(int argc , char *argv[])
         perror("connect failed. Error");
         return 1;
     }
-    int r = send(sock, helloMsg.c_str(), helloMsg.size(),0);
+    sendMessage(sock, HELLO_MSG+" myName");
 
 
     puts("Connected\n");
@@ -63,34 +62,19 @@ int main(int argc , char *argv[])
             if(!is_msg_legal(line)){
                 cout << "Message illegal!"<< endl;
             }
-            else if(send(sock, line.c_str(), line.size(), 0) != line.size()){
-                handleSysErr("send",errno);
+            else{
+                sendMessage(sock, line);
             }
         }
         if(FD_ISSET(sock, &active_fd_set)){
-            if ((readVal = read(sock, message, 1024)) == 0) {
-                // client disconnected.
-                if(close(sock) < 0){
-                    handleSysErr("close", errno);
-                }
-            } else if(readVal > 0){
-                // got new msg from sd.
-                message[readVal] = '\0';
-                std::cout << message << std::endl;
-                std::flush(std::cout);
-            } else{
+            string msg = readMessage(sock);
+            if(msg == ERR_MSG){
                 handleSysErr("read", errno);
             }
+            cout << "client received new message! " << msg << endl;
         }
     }
 
     close(sock);
     return 0;
-}
-
-
-
-void handleSysErr(string errCall, int errNu){
-    std::cout<< "ERROR: "<<errCall<<" "<< errNu <<"."<<std::endl;
-    exit(1);
 }

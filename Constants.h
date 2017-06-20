@@ -22,6 +22,8 @@ using namespace std;
 #define OKAY_LENGTH 2
 #define LEAVE_MESSAGE "MOTHERFUCKERWANNALEAVEUS"
 #define ERR_MSG "HOUSTONWEHAVEAPROBLEMSOPLEASEBEPATIENT"
+#def
+
 
 static const string HELLO_MSG = string("HELLOMADAFAKAWORLD");
 enum msg_types{

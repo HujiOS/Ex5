@@ -50,12 +50,23 @@ int create_group(string group_name, vector<string> user_names)
 
 int send_to_user(string user, string msg)
 {
-
+    if(nic_to_socket.find(user) == nic_to_socket.end()) return ERR;
+    if(sendMsg(nic_to_socket[user], msg) != SUCCESS) return ERR;
+    return SUCCESS;
 }
 
 int send_to_target(string name, string msg)
 {
-
+    if(groups.find(name) != groups.end())
+    {
+        vector<string> send_to = groups[name];
+        for(string user: send_to)
+        {
+            if(send_to_user(user, msg) != SUCCESS) return ERR;
+        }
+        return SUCCESS;
+    }
+    return send_to_user(name, msg);
 }
 
 int parse_incoming(int sid, string s)
@@ -64,6 +75,7 @@ int parse_incoming(int sid, string s)
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
 
+    string msg;
     string s1 = tokens[0];
     switch(msgs_to_enum[s1])
     {
@@ -82,7 +94,17 @@ int parse_incoming(int sid, string s)
             return SUCCESS;
 
         case SEND:
-            if(send_to_target(tokens[1], tokens[2]) != SUCCESS) return false;
+            msg = socket_to_nic[sid] + string(":") + tokens[2];
+            if(send_to_target(tokens[1], msg) != SUCCESS) {
+                cerr <<socket_to_nic[sid]<< ": " <<ERR_MSG << " failed to send " <<
+                     tokens[2] << " to " << tokens[1] << MSG_END;
+                sendMsg(sid, ERR_MSG + string(" failed to send") + MSG_END);
+                return ERR;
+            }
+
+            sendMsg(sid, string("Sent successfully") + MSG_END);
+            cout << msg << " was sent successfully to " << tokens[1] << MSG_END;
+            return SUCCESS;
         case HELLO:
 
 

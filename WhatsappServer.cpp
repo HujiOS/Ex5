@@ -14,14 +14,14 @@
 #include <iostream>
 #include "Constants.h"
 
-#define ERR_MSG string("ERROR:")
+#define ERROR_MSG string("ERROR:")
 #define STDIN 0
 #define MSG_END string(".\n")
 #define GROUP_SUCC(group) string("Group ") +string("\"")+ group + string("\"")+string(" was created successfully") + MSG_END
-#define GROUP_ERR(group) ERR_MSG + string(" failed to create group ") + string("\"") + group + string("\"") + MSG_END
-#define SEND_ERR_CLIENT ERR_MSG + string(" failed to send") + MSG_END
+#define GROUP_ERR(group) ERROR_MSG + string(" failed to create group ") + string("\"") + group + string("\"") + MSG_END
+#define SEND_ERR_CLIENT ERROR_MSG + string(" failed to send") + MSG_END
 #define SEND_SUCC_USER string("Sent successfully") + MSG_END
-#define WHO_ERR ERR_MSG + string(" failed to recieve list of connected clients") + MSG_END
+#define WHO_ERR ERROR_MSG + string(" failed to recieve list of connected clients") + MSG_END
 #define EXIT_MSG "Unregistered successfully" + MSG_END
 
 using namespace std;
@@ -93,7 +93,7 @@ int send_who(int sid)
 
     sort(list.begin(), list.end());
 
-    for(int i = 0; i < list.size(); ++i) {
+    for(unsigned int i = 0; i < list.size(); ++i) {
         s += list[i];
         if (i + 1 < list.size()) s += string(",");
     }
@@ -115,10 +115,10 @@ int unregister(int sid)
         }
     }
 
-    auto target1 = find(nic_to_socket.begin(), nic_to_socket.end(), socket_to_nic[sid]);
+    auto target1 = nic_to_socket.find(socket_to_nic[sid]);
     if(target1 != nic_to_socket.end()) nic_to_socket.erase(target1);
 
-    auto target2 = find(socket_to_nic.begin(), socket_to_nic.end(), sid);
+    auto target2 = socket_to_nic.find(sid);
     if(target2 != socket_to_nic.end()) socket_to_nic.erase(target2);
 
     return SUCCESS;
@@ -156,7 +156,7 @@ int parse_incoming(int sid, string s)
         case SEND:
             msg = socket_to_nic[sid] + string(":") + tokens[2];
             if(send_to_target(tokens[1], msg) != SUCCESS) {
-                cerr <<socket_to_nic[sid]<< ": " <<ERR_MSG << " failed to send " <<
+                cerr <<socket_to_nic[sid]<< ": " <<ERROR_MSG << " failed to send " <<
                      tokens[2] << " to " << tokens[1] << MSG_END;
                 sendMsg(sid, SEND_ERR_CLIENT);
                 return ERR;
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
         FD_SET(socket_desc, &active_fd_set);
         FD_SET(STDIN, &active_fd_set);
         // defining the io-sockets
-        for (int i = 0; i < clientSocks.size(); ++i) {
+        for (unsigned int i = 0; i < clientSocks.size(); ++i) {
             FD_SET(clientSocks[i], &active_fd_set);
             if (clientSocks[i] > maxSocket) maxSocket = clientSocks[i];
         }
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
         }
 
         // check sockets for new input
-        for (int i = 0; i < clientSocks.size(); ++i) {
+        for (unsigned int i = 0; i < clientSocks.size(); ++i) {
             sd = clientSocks[i];
             if (FD_ISSET(sd, &active_fd_set)) {
                 msg = readMessage(sd);

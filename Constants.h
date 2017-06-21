@@ -41,7 +41,7 @@ static map<string, msg_types>  msgs_to_enum = {{"create_group", CREATE_GROUP},
                                         {"send",SEND}, {"who", WHO}, {"exit",EXIT},
                                         {HELLO_MSG, HELLO}};
 
-static const regex digit_nums_only("[\w\s]+");
+static const regex digit_nums_only("[\\w\\s]+");
 /**
  * check if a given message is legal
  * @param s message to check
@@ -72,7 +72,7 @@ int is_msg_legal(string s, string sender)
     bool got_names = false;
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
-    if(tokens.size() < 0 || msgs_to_enum.find(tokens[0]) == msgs_to_enum.end()) return BAD_COMMAND;
+    if(tokens.size() == 0 || msgs_to_enum.find(tokens[0]) == msgs_to_enum.end()) return BAD_COMMAND;
     string s1 = tokens[0];
     switch(msgs_to_enum[s1])
     {

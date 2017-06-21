@@ -19,7 +19,10 @@
 #define MSG_END string(".\n")
 #define GROUP_SUCC(group) string("Group ") +string("\"")+ group + string("\"")+string(" was created successfully") + MSG_END
 #define GROUP_ERR(group) ERR_MSG + string(" failed to create group ") + string("\"") + group + string("\"") + MSG_END
-
+#define SEND_ERR_CLIENT ERR_MSG + string(" failed to send") + MSG_END
+#define SEND_SUCC_USER string("Sent successfully") + MSG_END
+#define WHO_ERR ERR_MSG + string(" failed to recieve list of connected clients") + MSG_END
+#define EXIT_MSG "Unregistered successfully" + MSG_END
 
 using namespace std;
 static vector<string> rmsgs;
@@ -69,11 +72,68 @@ int send_to_target(string name, string msg)
     return send_to_user(name, msg);
 }
 
+int add_name(string name, int id)
+{
+    if(groups.find(name) != groups.end()) return ERR;
+    if(nic_to_socket.find(name) != nic_to_socket.end()) return ERR;
+
+    nic_to_socket[name] = id;
+    socket_to_nic[id] = name;
+
+    return SUCCESS;
+}
+
+int send_who(int sid)
+{
+    vector<string> list;
+    string s("");
+    for(auto it = nic_to_socket.begin(); it != nic_to_socket.end(); ++it){
+        list.push_back(it -> first);
+    }
+
+    sort(list.begin(), list.end());
+
+    for(int i = 0; i < list.size(); ++i) {
+        s += list[i];
+        if (i + 1 < list.size()) s += string(",");
+    }
+
+    sendMsg(sid, s);
+
+    return SUCCESS;
+
+}
+
+int unregister(int sid)
+{
+    for(auto it = groups.begin(); it != groups.end(); ++it)
+    {
+        auto loc = find(it->second.begin(), it->second.end(),socket_to_nic[sid]);
+        if(loc != it->second.end())
+        {
+            it->second.erase(loc);
+        }
+    }
+
+    auto target1 = find(nic_to_socket.begin(), nic_to_socket.end(), socket_to_nic[sid]);
+    if(target1 != nic_to_socket.end()) nic_to_socket.erase(target1);
+
+    auto target2 = find(socket_to_nic.begin(), socket_to_nic.end(), sid);
+    if(target2 != socket_to_nic.end()) socket_to_nic.erase(target2);
+
+    return SUCCESS;
+}
+
 int parse_incoming(int sid, string s)
 {
     cmatch m;
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
+
+    if(is_msg_legal(socket_to_nic[sid], s) != SUCCESS){ //THIS IS NOT SUPPOSED TO HAPPEN, CLIENTS SEND LEGAL MSGS
+        cerr << "oops, something went wrong" << endl;
+        return ERR;
+    }
 
     string msg;
     string s1 = tokens[0];
@@ -98,21 +158,33 @@ int parse_incoming(int sid, string s)
             if(send_to_target(tokens[1], msg) != SUCCESS) {
                 cerr <<socket_to_nic[sid]<< ": " <<ERR_MSG << " failed to send " <<
                      tokens[2] << " to " << tokens[1] << MSG_END;
-                sendMsg(sid, ERR_MSG + string(" failed to send") + MSG_END);
+                sendMsg(sid, SEND_ERR_CLIENT);
                 return ERR;
             }
 
-            sendMsg(sid, string("Sent successfully") + MSG_END);
+            sendMsg(sid, SEND_SUCC_USER);
             cout << msg << " was sent successfully to " << tokens[1] << MSG_END;
             return SUCCESS;
         case HELLO:
-
-
+            if(add_name(tokens[1], sid) != SUCCESS) return ERR; //anything to print as err?
+            sendMsg(sid ,"Connected successfully" + MSG_END);
+            cout << tokens[1] << " connected" + MSG_END;
+            return SUCCESS;
         case WHO:
-
+            cout << socket_to_nic[sid] << ": Requests the currently connected client names" + MSG_END;
+            if(send_who(sid) != SUCCESS)
+            {
+                sendMsg(sid,WHO_ERR);
+            }
+            return SUCCESS;
         case EXIT:
+            msg = socket_to_nic[sid];
+            unregister(sid);
+            sendMsg(sid, EXIT_MSG);
+            cout << msg << ":" << EXIT_MSG;
         default:
-            break;
+            cerr << "oops, i did not recognize the command" << endl;
+            return ERR;
     }
 }
 

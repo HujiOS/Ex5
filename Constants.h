@@ -22,7 +22,13 @@ using namespace std;
 #define OKAY_LENGTH 2
 #define LEAVE_MESSAGE "MOTHERFUCKERWANNALEAVEUS"
 #define ERR_MSG "HOUSTONWEHAVEAPROBLEMSOPLEASEBEPATIENT"
-#def
+
+#define BAD_GROUP -3
+#define BAD_SEND -4
+#define BAD_WHO -5
+#define BAD_EXIT -6
+#define BAD_HELLO -7
+#define BAD_COMMAND -1
 
 
 static const string HELLO_MSG = string("HELLOMADAFAKAWORLD");
@@ -60,43 +66,45 @@ void handleSysErr(string errCall, int errNu) {
     exit(1);
 }
 
-bool is_msg_legal(string s, string sender)
+int is_msg_legal(string s, string sender)
 {
     cmatch m;
     bool got_names = false;
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
-    if(tokens.size() < 0 || msgs_to_enum.find(tokens[0]) == msgs_to_enum.end()) return false;
+    if(tokens.size() < 0 || msgs_to_enum.find(tokens[0]) == msgs_to_enum.end()) return BAD_COMMAND;
     string s1 = tokens[0];
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:
-            if(tokens.size() < 3 || tokens.size() > 3) return false;
-            if (!regex_match(tokens[1].c_str(), m, digit_nums_only)) return false;
+            if(tokens.size() < 3 || tokens.size() > 3) return BAD_GROUP;
+            if (!regex_match(tokens[1].c_str(), m, digit_nums_only)) return BAD_GROUP;
              names = parse_delim(tokens[2], ',');
             for(string name: names)
             {
-                if (!regex_match(name.c_str(), m, digit_nums_only)) return false;
+                if (!regex_match(name.c_str(), m, digit_nums_only)) return BAD_GROUP;
                 got_names = true;
             }
-            if(!got_names) return false;
+            if(!got_names) return BAD_GROUP;
             //TODO: check if there are extra params?
-            return true;
+            return SUCCESS;
         case SEND:
-            if(tokens.size() < 3 || tokens.size() > 3) return false;
-            if(sender == tokens[1]) return false;
-            return regex_match(tokens[1].c_str(), m, digit_nums_only);
+            if(tokens.size() < 3 || tokens.size() > 3) return BAD_SEND;
+            if(sender == tokens[1]) return BAD_SEND;
+            if(regex_match(tokens[1].c_str(), m, digit_nums_only)) return SUCCESS;
+            return BAD_SEND;
         case WHO:
-            if (tokens.size()!=1) return false;
-            return true;
+            if (tokens.size()!=1) return BAD_WHO;
+            return SUCCESS;
         case EXIT:
-            if (tokens.size()!=1) return false;
-            return true;
+            if (tokens.size()!=1) return BAD_EXIT;
+            return SUCCESS;
         case HELLO:
-            if (tokens.size()!=2) return false;
-            return regex_match(tokens[1].c_str(), m, digit_nums_only);
+            if (tokens.size()!=2) return BAD_HELLO;
+            if(regex_match(tokens[1].c_str(), m, digit_nums_only)) return SUCCESS;
+            return BAD_HELLO;
         default:
-            return false;
+            return BAD_COMMAND;
     }
 }
 

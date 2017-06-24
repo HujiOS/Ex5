@@ -25,6 +25,8 @@ static map<string, vector<string>> groups;
 static vector<int> clientSocks;
 static vector<int> deletedSockes;
 static map<int, string> clientNickNames;
+
+const string exit_string = "EXIT";
 //the thread function
 
 int create_group(string group_name, vector<string> user_names)
@@ -278,7 +280,10 @@ int main(int argc, char *argv[]) {
         if (FD_ISSET(STDIN, &active_fd_set)) {
             std::string line;
             std::getline(std::cin, line);
-            cout << line << endl;
+            if(line == exit_string){
+                cout << "EXIT command is typed: server is shutting down" << endl;
+                exit(0);
+            }
         }
 
         // check sockets for new input
@@ -310,4 +315,11 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/// TODO
+/// when typing create group it somehow recognize it as create_group command and return "cannot create group "group""
+// so create group a,b,c works somehow
 
+
+// when trying to send a message to unknown user like send ASDFAS hello world the server prints failed to send hello to B (and not failed to send "Hello world" to "B")
+
+// send_bar a hello will return

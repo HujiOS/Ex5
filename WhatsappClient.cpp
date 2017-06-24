@@ -18,6 +18,15 @@ static string nickname;
 static string ip;
 static string port;
 void handleSysErr(string,int);
+
+bool checkIfErrMsg(string &s){
+    size_t find = s.find(ERROR_SYMBOL);
+    if(find == string::npos){
+        return false;
+    }
+    s = s.substr(ERROR_SYMBOL.size());
+    return true;
+}
 int main(int argc , char *argv[])
 {
     int sock, readVal, legCode;
@@ -109,8 +118,16 @@ int main(int argc , char *argv[])
             string msg = readMessage(sock);
             if(msg == ERR_MSG){
                 handleSysErr("read", errno);
+            } else if(msg == USER_IN_USE){
+                cout << "Client name is already in use." << endl;
+                close(sock);
+                exit(1);
             }
-            cout << msg;
+            if(checkIfErrMsg(msg)){
+                cerr << msg << std::flush;
+            } else {
+                cout << msg << std::flush;
+            }
         }
     }
 

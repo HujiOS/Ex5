@@ -48,7 +48,7 @@ int main(int argc , char *argv[])
         handleSysErr("connect",errno);
         return 1;
     }
-    sendMsg(sock, HELLO_MSG+" "+nickname);
+    sendMsg(sock, HELLO_MSG + " " + nickname);
 
 
     cout << "Connected successfully." << endl;

@@ -46,6 +46,12 @@ int create_group(string group_name, vector<string> user_names)
 
     if(user_names.size() <= 1) return ERR;
 
+    for(string user: user_names)
+    {
+        if(nic_to_socket.find(user) == nic_to_socket.end()) return ERR;
+    }
+
+
     groups[group_name] = user_names;
 
     return SUCCESS;

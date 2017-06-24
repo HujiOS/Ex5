@@ -115,7 +115,14 @@ int unregister(int sid)
             it->second.erase(loc);
         }
     }
-
+    auto it = groups.begin();
+    while (it != groups.end()) {
+        if (it->second.size() == 0) {
+            it = groups.erase(it);
+        } else {
+            ++it;
+        }
+    }
     auto target1 = nic_to_socket.find(socket_to_nic[sid]);
     if(target1 != nic_to_socket.end()) nic_to_socket.erase(target1);
 

@@ -158,7 +158,7 @@ int parse_incoming(int sid, string s)
             names.push_back(socket_to_nic[sid]);
             if(create_group(tokens[1], names) != SUCCESS)
             {
-                sendMsg(sid, GROUP_ERR(tokens[1]));
+                sendErrMsg(sid, GROUP_ERR(tokens[1]));
                 cerr << socket_to_nic[sid] << ": " << GROUP_ERR(tokens[1]);
                 return ERR;
             }
@@ -178,7 +178,7 @@ int parse_incoming(int sid, string s)
             if(send_to_target(tokens[1], msg, sid) != SUCCESS) {
                 cerr <<socket_to_nic[sid]<< ": " <<ERROR_MSG << " failed to send \"" <<
                      msg_no_user << "\" to " << tokens[1] << MSG_END;
-                sendMsg(sid, SEND_ERR_CLIENT);
+                sendErrMsg(sid, SEND_ERR_CLIENT);
                 return ERR;
             }
 
@@ -188,7 +188,7 @@ int parse_incoming(int sid, string s)
         case HELLO:
             if(add_name(tokens[1], sid) != SUCCESS)
             {
-                sendMsg(sid ,USER_IN_USE);
+                sendErrMsg(sid ,USER_IN_USE);
                 return ERR;
             } //anything to print as err?
             sendMsg(sid ,"Connected successfully" + MSG_END);
@@ -198,7 +198,8 @@ int parse_incoming(int sid, string s)
             cout << socket_to_nic[sid] << ": Requests the currently connected client names" + MSG_END;
             if(send_who(sid) != SUCCESS)
             {
-                sendMsg(sid,WHO_ERR);
+                sendErrMsg(sid,WHO_ERR);
+                return ERR;
             }
             return SUCCESS;
         case EXIT:

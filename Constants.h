@@ -45,7 +45,7 @@ using namespace std;
 #define WHO_ERR ERROR_MSG + string(" failed to recieve list of connected clients") + MSG_END
 #define EXIT_MSG "Unregistered successfully" + MSG_END
 #define USER_IN_USE "Username in use" + MSG_END
-
+#define ERROR_SYMBOL string("WHOLETTHEDOGSOUTWHOWHOWHOWHOWHO")
 
 /*****************************/
 
@@ -194,12 +194,8 @@ int sendMsg(int socket, string msg) {
     }
 }
 
-int sendMsg(int socket, string msg, bool force){
-    if(force){
-        while(sendMsg(socket, msg) < 0){}
-    }
-    sendMsg(socket, msg);
-    return 0;
+int sendErrMsg(int socket, string msg) {
+    return sendMsg(socket, ERROR_SYMBOL + msg);
 }
 
 

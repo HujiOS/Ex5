@@ -20,7 +20,8 @@ static string port;
 void handleSysErr(string,int);
 int main(int argc , char *argv[])
 {
-    int sock, readVal;
+    int sock, readVal, legCode;
+    msg_types type;
     struct sockaddr_in server;
     char message[1024];
     int y = 1;
@@ -50,9 +51,6 @@ int main(int argc , char *argv[])
     }
     sendMsg(sock, HELLO_MSG + " " + nickname);
 
-
-    cout << "Connected successfully." << endl;
-
     //keep communicating with server
      // stdin
     while(1 == y)
@@ -68,8 +66,8 @@ int main(int argc , char *argv[])
         if(FD_ISSET(STDIN, &active_fd_set)){
             getline(std::cin, line);
             vector<string> tokens = parse_delim(line, ' ');
-
-            switch(is_msg_legal(line, nickname))
+            legCode = is_msg_legal(line, nickname);
+            switch(legCode)
             {
                 case BAD_HELLO:
                     cerr << "Illegal username bro"<< endl;
@@ -96,13 +94,23 @@ int main(int argc , char *argv[])
                     cerr << "Whoops. Got an unknown err message" << endl;
                     break;
             }
+            string msg = "";
+            switch(msgs_to_enum[tokens[0]]){
+                case msg_types::EXIT:
+                    while(msg != EXIT_MSG){
+                        msg  = readMessage(sock);
+                    }
+                    exit(1);
+                default:
+                    break;
+            }
         }
         if(FD_ISSET(sock, &active_fd_set)){
             string msg = readMessage(sock);
             if(msg == ERR_MSG){
                 handleSysErr("read", errno);
             }
-            cout << "client received new message! " << msg << endl;
+            cout << msg;
         }
     }
 

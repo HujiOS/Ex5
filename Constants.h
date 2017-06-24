@@ -187,7 +187,7 @@ int sendMsg(int socket, string msg) {
         cout << "Tried to send message, got other message, not OK :(" << endl;
         return ERR;
     } else {
-        cout << "Message sent successfuly" << endl;
+//        cout << "Message sent successfuly" << endl;
         return SUCCESS;
     }
 }

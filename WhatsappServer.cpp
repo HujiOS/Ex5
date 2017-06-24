@@ -150,7 +150,7 @@ int parse_incoming(int sid, string s)
     }
 
     string msg;
-
+    string msg_no_user("");
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:
@@ -159,11 +159,11 @@ int parse_incoming(int sid, string s)
             if(create_group(tokens[1], names) != SUCCESS)
             {
                 sendMsg(sid, GROUP_ERR(tokens[1]));
-                cerr << socket_to_nic[sid] << ":" << GROUP_ERR(tokens[1]);
+                cerr << socket_to_nic[sid] << ": " << GROUP_ERR(tokens[1]);
                 return ERR;
             }
             sendMsg(sid, GROUP_SUCC(tokens[1]));
-            cout << socket_to_nic[sid] << ":" << GROUP_SUCC(tokens[1]);
+            cout << socket_to_nic[sid] << ": " << GROUP_SUCC(tokens[1]);
             //TODO: anything else?
             return SUCCESS;
 
@@ -171,17 +171,19 @@ int parse_incoming(int sid, string s)
             msg = socket_to_nic[sid] + string(":");
             for (int i = 2; i < tokens.size(); ++i)
             {
-                msg += string(" ") + tokens[i];
+                msg_no_user +=tokens[i];
+                if(i+1<tokens.size()) msg_no_user += string(" ");
+                    msg += string(" ") + tokens[i];
             }
             if(send_to_target(tokens[1], msg, sid) != SUCCESS) {
-                cerr <<socket_to_nic[sid]<< ": " <<ERROR_MSG << " failed to send " <<
-                     tokens[2] << " to " << tokens[1] << MSG_END;
+                cerr <<socket_to_nic[sid]<< ": " <<ERROR_MSG << " failed to send \"" <<
+                     msg_no_user << "\" to " << tokens[1] << MSG_END;
                 sendMsg(sid, SEND_ERR_CLIENT);
                 return ERR;
             }
 
             sendMsg(sid, SEND_SUCC_USER);
-            cout << msg << " was sent successfully to " << tokens[1] << MSG_END;
+            cout <<"\"" << msg << "\"" << " was sent successfully to " << tokens[1] << MSG_END;
             return SUCCESS;
         case HELLO:
             if(add_name(tokens[1], sid) != SUCCESS) return ERR; //anything to print as err?

@@ -117,14 +117,14 @@ int unregister(int sid)
             it->second.erase(loc);
         }
     }
-    auto it = groups.begin();
-    while (it != groups.end()) {
-        if (it->second.size() == 0) {
-            it = groups.erase(it);
-        } else {
-            ++it;
-        }
-    }
+//    auto it = groups.begin();
+//    while (it != groups.end()) {
+//        if (it->second.size() == 0 ) { //|| it->second.size() == 1
+//            it = groups.erase(it);
+//        } else {
+//            ++it;
+//        }
+//    }
     auto target1 = nic_to_socket.find(socket_to_nic[sid]);
     if(target1 != nic_to_socket.end()) nic_to_socket.erase(target1);
 
@@ -185,7 +185,8 @@ int parse_incoming(int sid, string s)
             }
 
             sendMsg(sid, SEND_SUCC_USER);
-            cout <<"\"" << msg << "\"" << " was sent successfully to " << tokens[1] << MSG_END;
+            cout <<socket_to_nic[sid] << ": " <<"\"" << msg_no_user << "\"" <<
+                 " was sent successfully to " << tokens[1] << MSG_END;
             return SUCCESS;
         case HELLO:
             if(add_name(tokens[1], sid) != SUCCESS)
@@ -208,7 +209,7 @@ int parse_incoming(int sid, string s)
             msg = socket_to_nic[sid];
             unregister(sid);
             sendMsg(sid, EXIT_MSG);
-            cout << msg << ":" << EXIT_MSG;
+            cout << msg << ": " << EXIT_MSG;
             return SUCCESS;
         default:
             cerr << "oops, i did not recognize the command" << endl;

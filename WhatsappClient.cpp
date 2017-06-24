@@ -58,6 +58,12 @@ int main(int argc , char *argv[])
         handleSysErr("connect",errno);
         return 1;
     }
+    if(is_msg_legal(HELLO_MSG + " " + nickname, nickname)== BAD_HELLO)
+    {
+        cout << "Client name is already in use." << endl;
+        close(sock);
+        exit(1);
+    }
     sendMsg(sock, HELLO_MSG + " " + nickname);
 
     //keep communicating with server
@@ -118,7 +124,7 @@ int main(int argc , char *argv[])
             string msg = readMessage(sock);
             if(msg == ERR_MSG){
                 handleSysErr("read", errno);
-            } else if(msg == USER_IN_USE){
+            } else if(msg == ERROR_SYMBOL + USER_IN_USE){
                 cout << "Client name is already in use." << endl;
                 close(sock);
                 exit(1);

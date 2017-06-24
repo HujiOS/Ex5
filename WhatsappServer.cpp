@@ -135,14 +135,20 @@ int parse_incoming(int sid, string s)
     cmatch m;
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
+    string s1 = tokens[0];
 
+    if(msgs_to_enum[s1] != HELLO && socket_to_nic.find(sid) == socket_to_nic.end())
+    {
+        cerr << "I dont recognize this username" << endl;
+        return ERR;
+    }
     if(is_msg_legal(s, socket_to_nic[sid]) != SUCCESS){ //THIS IS NOT SUPPOSED TO HAPPEN, CLIENTS SEND LEGAL MSGS
         cerr << "oops, something went wrong" << endl;
         return ERR;
     }
 
     string msg;
-    string s1 = tokens[0];
+
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:

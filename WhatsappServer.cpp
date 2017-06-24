@@ -185,6 +185,7 @@ int parse_incoming(int sid, string s)
             unregister(sid);
             sendMsg(sid, EXIT_MSG);
             cout << msg << ":" << EXIT_MSG;
+            return SUCCESS;
         default:
             cerr << "oops, i did not recognize the command" << endl;
             return ERR;

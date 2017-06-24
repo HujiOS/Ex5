@@ -130,7 +130,7 @@ int parse_incoming(int sid, string s)
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
 
-    if(is_msg_legal(socket_to_nic[sid], s) != SUCCESS){ //THIS IS NOT SUPPOSED TO HAPPEN, CLIENTS SEND LEGAL MSGS
+    if(is_msg_legal(s, socket_to_nic[sid]) != SUCCESS){ //THIS IS NOT SUPPOSED TO HAPPEN, CLIENTS SEND LEGAL MSGS
         cerr << "oops, something went wrong" << endl;
         return ERR;
     }

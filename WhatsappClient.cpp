@@ -67,7 +67,7 @@ int main(int argc , char *argv[])
         }
         if(FD_ISSET(STDIN, &active_fd_set)){
             getline(std::cin, line);
-            if(!is_msg_legal(line, nickname)){
+            if(is_msg_legal(line, nickname) != SUCCESS){
                 cerr << "Invalid input."<< endl;
             }
             else{

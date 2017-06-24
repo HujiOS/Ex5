@@ -188,7 +188,7 @@ int parse_incoming(int sid, string s)
         case HELLO:
             if(add_name(tokens[1], sid) != SUCCESS)
             {
-                sendMsg(sid ,"Username in use" + MSG_END);
+                sendMsg(sid ,USER_IN_USE);
                 return ERR;
             } //anything to print as err?
             sendMsg(sid ,"Connected successfully" + MSG_END);

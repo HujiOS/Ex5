@@ -75,7 +75,7 @@ int main(int argc , char *argv[])
                     cerr << "Illegal username bro"<< endl;
                     break;
                 case BAD_COMMAND:
-                    cerr << "Invalid input."<< endl;
+                    cerr << ERROR_MSG <<" Invalid input."<< endl;
                     break;
                 case BAD_GROUP:
                     cerr << GROUP_ERR(tokens[1]);

@@ -51,7 +51,7 @@ int create_group(string group_name, vector<string> user_names)
 int send_to_user(string user, string msg)
 {
     if(nic_to_socket.find(user) == nic_to_socket.end()) return ERR;
-    if(sendMsg(nic_to_socket[user], msg) != SUCCESS) return ERR;
+    if(sendMsg(nic_to_socket[user], msg + string("\n")) != SUCCESS) return ERR;
     return SUCCESS;
 }
 
@@ -62,7 +62,7 @@ int send_to_target(string name, string msg, int sid)
         vector<string> send_to = groups[name];
         for(string user: send_to)
         {
-            if(name == socket_to_nic[sid]) continue;
+            if(user == socket_to_nic[sid]) continue;
             if(send_to_user(user, msg) != SUCCESS) return ERR;
         }
         return SUCCESS;
@@ -96,7 +96,7 @@ int send_who(int sid)
         if (i + 1 < list.size())
             s += string(",");
         else
-            s += string(".\n");
+            s += string("\n");
     }
 
     sendMsg(sid, s);

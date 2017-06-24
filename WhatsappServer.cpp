@@ -14,15 +14,6 @@
 #include <iostream>
 #include "Constants.h"
 
-#define ERROR_MSG string("ERROR:")
-#define STDIN 0
-#define MSG_END string(".\n")
-#define GROUP_SUCC(group) string("Group ") +string("\"")+ group + string("\"")+string(" was created successfully") + MSG_END
-#define GROUP_ERR(group) ERROR_MSG + string(" failed to create group ") + string("\"") + group + string("\"") + MSG_END
-#define SEND_ERR_CLIENT ERROR_MSG + string(" failed to send") + MSG_END
-#define SEND_SUCC_USER string("Sent successfully") + MSG_END
-#define WHO_ERR ERROR_MSG + string(" failed to recieve list of connected clients") + MSG_END
-#define EXIT_MSG "Unregistered successfully" + MSG_END
 
 using namespace std;
 static vector<string> rmsgs;
@@ -45,6 +36,12 @@ int create_group(string group_name, vector<string> user_names)
     user_names.erase(unique(user_names.begin(), user_names.end()), user_names.end());
 
     if(user_names.size() <= 1) return ERR;
+
+    for(string user: user_names)
+    {
+        if(nic_to_socket.find(user) == nic_to_socket.end()) return ERR;
+    }
+
 
     groups[group_name] = user_names;
 
@@ -129,14 +126,20 @@ int parse_incoming(int sid, string s)
     cmatch m;
     vector<string> tokens = parse_delim(s, ' ');
     vector<string> names;
+    string s1 = tokens[0];
 
+    if(msgs_to_enum[s1] != HELLO && socket_to_nic.find(sid) == socket_to_nic.end())
+    {
+        cerr << "I dont recognize this username" << endl;
+        return ERR;
+    }
     if(is_msg_legal(s, socket_to_nic[sid]) != SUCCESS){ //THIS IS NOT SUPPOSED TO HAPPEN, CLIENTS SEND LEGAL MSGS
         cerr << "oops, something went wrong" << endl;
         return ERR;
     }
 
     string msg;
-    string s1 = tokens[0];
+
     switch(msgs_to_enum[s1])
     {
         case CREATE_GROUP:

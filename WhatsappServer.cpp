@@ -186,7 +186,11 @@ int parse_incoming(int sid, string s)
             cout <<"\"" << msg << "\"" << " was sent successfully to " << tokens[1] << MSG_END;
             return SUCCESS;
         case HELLO:
-            if(add_name(tokens[1], sid) != SUCCESS) return ERR; //anything to print as err?
+            if(add_name(tokens[1], sid) != SUCCESS)
+            {
+                sendMsg(sid ,"Username in use" + MSG_END);
+                return ERR;
+            } //anything to print as err?
             sendMsg(sid ,"Connected successfully" + MSG_END);
             cout << tokens[1] << " connected" + MSG_END;
             return SUCCESS;

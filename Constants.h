@@ -147,7 +147,6 @@ string readMessage(int socket) {
         bzero(msgbuffer, chunks);
     }
     send(socket, OKAY_MESSAGE, OKAY_LENGTH, 0);
-    cout << "Message Received! " << word << endl;
     return word;
 }
 int confirmWithTimeout(int socket);
@@ -194,15 +193,15 @@ int confirmWithTimeout(int socket){
     FD_ZERO(&set); /* clear the set */
     FD_SET(socket, &set); /* add our file descriptor to the set */
     timeout.tv_sec = 0;
-    timeout.tv_usec = 5000;
-    rv = select(socket + 1 , &set, NULL, NULL, &timeout);
+    timeout.tv_usec = 10000;
+    rv = select(socket + 1 , &set, NULL, NULL, NULL);
     if(rv == -1){
         handleSysErr("select",errno);
     }
     if(rv == 0){
         return TIMEOUT;
     } else {
-        rb = read(socket, tBuff, 256);
+        rb = read(socket, tBuff, 2);
         if(rb < 0){
             handleSysErr("read", errno);
             return 0; // useless line..

@@ -78,7 +78,6 @@ int main(int argc , char *argv[])
                     cerr << "Invalid input."<< endl;
                     break;
                 case BAD_GROUP:
-
                     cerr << GROUP_ERR(tokens[1]);
                     break;
                 case BAD_EXIT:

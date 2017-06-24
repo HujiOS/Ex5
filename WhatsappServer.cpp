@@ -55,13 +55,14 @@ int send_to_user(string user, string msg)
     return SUCCESS;
 }
 
-int send_to_target(string name, string msg)
+int send_to_target(string name, string msg, int sid)
 {
     if(groups.find(name) != groups.end())
     {
         vector<string> send_to = groups[name];
         for(string user: send_to)
         {
+            if(name == socket_to_nic[sid]) continue;
             if(send_to_user(user, msg) != SUCCESS) return ERR;
         }
         return SUCCESS;
@@ -92,7 +93,10 @@ int send_who(int sid)
 
     for(unsigned int i = 0; i < list.size(); ++i) {
         s += list[i];
-        if (i + 1 < list.size()) s += string(",");
+        if (i + 1 < list.size())
+            s += string(",");
+        else
+            s += string(".\n");
     }
 
     sendMsg(sid, s);
@@ -158,7 +162,7 @@ int parse_incoming(int sid, string s)
 
         case SEND:
             msg = socket_to_nic[sid] + string(":") + tokens[2];
-            if(send_to_target(tokens[1], msg) != SUCCESS) {
+            if(send_to_target(tokens[1], msg, sid) != SUCCESS) {
                 cerr <<socket_to_nic[sid]<< ": " <<ERROR_MSG << " failed to send " <<
                      tokens[2] << " to " << tokens[1] << MSG_END;
                 sendMsg(sid, SEND_ERR_CLIENT);
@@ -185,6 +189,7 @@ int parse_incoming(int sid, string s)
             unregister(sid);
             sendMsg(sid, EXIT_MSG);
             cout << msg << ":" << EXIT_MSG;
+            return SUCCESS;
         default:
             cerr << "oops, i did not recognize the command" << endl;
             return ERR;

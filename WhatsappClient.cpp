@@ -67,11 +67,35 @@ int main(int argc , char *argv[])
         }
         if(FD_ISSET(STDIN, &active_fd_set)){
             getline(std::cin, line);
-            if(is_msg_legal(line, nickname) != SUCCESS){
-                cerr << "Invalid input."<< endl;
-            }
-            else{
-                sendMsg(sock, line);
+            vector<string> tokens = parse_delim(line, ' ');
+
+            switch(is_msg_legal(line, nickname))
+            {
+                case BAD_HELLO:
+                    cerr << "Illegal username bro"<< endl;
+                    break;
+                case BAD_COMMAND:
+                    cerr << "Invalid input."<< endl;
+                    break;
+                case BAD_GROUP:
+
+                    cerr << GROUP_ERR(tokens[1]);
+                    break;
+                case BAD_EXIT:
+                    cerr << "impossible" << endl;
+                    break;
+                case BAD_SEND:
+                    cerr << SEND_ERR_CLIENT;
+                    break;
+                case BAD_WHO:
+                    cerr << WHO_ERR;
+                    break;
+                case SUCCESS:
+                    sendMsg(sock, line);
+                    break;
+                default:
+                    cerr << "Whoops. Got an unknown err message" << endl;
+                    break;
             }
         }
         if(FD_ISSET(sock, &active_fd_set)){

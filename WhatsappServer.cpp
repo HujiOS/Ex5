@@ -168,7 +168,11 @@ int parse_incoming(int sid, string s)
             return SUCCESS;
 
         case SEND:
-            msg = socket_to_nic[sid] + string(":") + tokens[2];
+            msg = socket_to_nic[sid] + string(":");
+            for (int i = 2; i < tokens.size(); ++i)
+            {
+                msg += string(" ") + tokens[i];
+            }
             if(send_to_target(tokens[1], msg, sid) != SUCCESS) {
                 cerr <<socket_to_nic[sid]<< ": " <<ERROR_MSG << " failed to send " <<
                      tokens[2] << " to " << tokens[1] << MSG_END;

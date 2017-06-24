@@ -105,7 +105,7 @@ int is_msg_legal(string s, string sender)
             if(!got_names) return BAD_GROUP;
             return SUCCESS;
         case SEND:
-            if(tokens.size() < 3 || tokens.size() > 3) return BAD_SEND;
+            if(tokens.size() < 3) return BAD_SEND;
             if(sender == tokens[1]) return BAD_SEND;
             if(regex_match(tokens[1].c_str(), m, digit_nums_only)) return SUCCESS;
             return BAD_SEND;

@@ -7,16 +7,19 @@ CFLAGS = -Wall -Wextra -c -g
 LOADLIBES = -L./
 LFLAGS = -o
 
-MORECLEAN=CacheFS.a *.o
+MORECLEAN=WhatsappServer WhatsappClient
 
 TAR=tar
 TARFLAGS=-cvf
 TARNAME=ex4.tar
 TARSRCS=$(LIBSRC) Makefile README Answers.pdf Algorithm.h Block.cpp Block.h CacheFS.cpp FBRAlg.h LFUAlg.h LRUAlg.h myFile.cpp myFile.h
 
-all: WhatsappServer
+all: WhatsappServer WhatsappClient
 
 WhatsappServer : WhatsappServer.o
+	$(CC) $^ -o $@
+
+WhatsappClient : WhatsappClient.o
 	$(CC) $^ -o $@
 
 TEST.o : TEST.cpp

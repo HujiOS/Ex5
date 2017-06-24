@@ -86,7 +86,6 @@ int is_msg_legal(string s, string sender)
                 got_names = true;
             }
             if(!got_names) return BAD_GROUP;
-            //TODO: check if there are extra params?
             return SUCCESS;
         case SEND:
             if(tokens.size() < 3 || tokens.size() > 3) return BAD_SEND;

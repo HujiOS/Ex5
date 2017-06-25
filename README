@@ -24,5 +24,12 @@ Example 1 - Multiplayer First Person Shooter game, an online game where communic
 
 Example 2 - Skype-call. Human communication is fast-paced, and audio+video require lots of data. We'd rather have a video\audio glitch resulting from a missing packet than slowing the communication down while waiting until all the packets arrive.
 
+Example 3 - VPN Services, while the user wont get all the data from the server because after some milisec the data will become irrelevant.
+
 Question 4:
+
+To perfom an soft recover we will maintan a semaphore the will increment after very "client structure" operation, and another thread will manage
+to update a remote db in the client structure. (like groups members and names, clients nicknames and file descriptors..) when the server will
+reload after a crash the thread will lock all the static maps\vectors of the server and will insert the saved details. after that the server will
+work regularly :X
 

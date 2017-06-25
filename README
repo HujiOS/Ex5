@@ -1,0 +1,28 @@
+bgalb, omer
+Gal Katzhendler(203165238), Omer Shacham(204034722)
+EX: 5
+
+FILES:
+README - this file
+Makefile - a file that helps to compile all of this
+WhatsappClient.cpp - a client for the whatsapp communication system
+WhatsappServer.cpp - our implementation of the whatsapp server managing whatsapp communication
+Constants.h - some mutual functions and constants used by both sides
+
+
+ANSWERS:
+
+Question 1:
+1 - We will have to change the client side to accept the new type of command and not recognize it as an illegal message. We would also like to verify that the name is a legal group name.
+2 - We will add another command to the parser, checking the group exists and the user is in it, removing the user from the group, and notifying the user his action has succeeded/failed.
+
+Question 2:
+We prefer TCP as there is no particular time constraint on the communication(it doesn't have to be real time), and TCP takes care that all messages pass to their target by order, while UDP doesn't, and would've required us to take extra actions to prevent loss of communication etc.
+
+Question 3:
+Example 1 - Multiplayer First Person Shooter game, an online game where communication goes through a server with lots of information(many things happen at once etc.) A package taking time to arrive won't be needed as the games changes quickly and we would rather have missing information than all the information but slower.
+
+Example 2 - Skype-call. Human communication is fast-paced, and audio+video require lots of data. We'd rather have a video\audio glitch resulting from a missing packet than slowing the communication down while waiting until all the packets arrive.
+
+Question 4:
+

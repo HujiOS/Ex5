@@ -44,6 +44,7 @@ using namespace std;
 #define SEND_SUCC_USER string("Sent successfully") + MSG_END
 #define WHO_ERR ERROR_MSG + string(" failed to recieve list of connected clients") + MSG_END
 #define EXIT_MSG "Unregistered successfully" + MSG_END
+#define SERVER_EXIT_MSG string("Unregistered successfully") + MSG_END
 #define USER_IN_USE "Username in use" + MSG_END
 #define ERROR_SYMBOL string("WHOLETTHEDOGSOUTWHOWHOWHOWHOWHO")
 
@@ -143,7 +144,7 @@ string intToMsgLength(int number){
 }
 
 string readMessage(int socket) {
-    int length = 4, currRead, readBytes = 0, chunks = 256, lr;
+    int length = 4, currRead, readBytes = 0, chunks = 256;
     char msgbuffer[256], msgLength[4];
     string word = "";
     while (readBytes < length) {
@@ -171,6 +172,7 @@ string readMessage(int socket) {
 int confirmWithTimeout(int socket);
 int sendMsg(int socket, string msg) {
     string fmsg = "";
+    ssize_t sent = 0;
     int confirmationCode;
     if (msg.size() > 9999) {
         // Error we cant send messages longer than 9999 bytes.
@@ -178,7 +180,8 @@ int sendMsg(int socket, string msg) {
     }
     fmsg += intToMsgLength(msg.size());
     fmsg += msg;
-    if(send(socket, fmsg.c_str(), fmsg.size(), 0) != fmsg.size()){
+    sent = send(socket, fmsg.c_str(), fmsg.size(), 0);
+    if(sent != (ssize_t)fmsg.size()){
         handleSysErr("send",errno);
     }
     confirmationCode = confirmWithTimeout(socket);
@@ -209,7 +212,7 @@ int confirmWithTimeout(int socket){
     FD_SET(socket, &set); /* add our file descriptor to the set */
     timeout.tv_sec = 0;
     timeout.tv_usec = 10000;
-    rv = select(socket + 1 , &set, NULL, NULL, NULL);
+    rv = select(socket + 1 , &set, NULL, NULL, &timeout);
     if(rv == -1){
         handleSysErr("select",errno);
     }

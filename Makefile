@@ -11,8 +11,8 @@ MORECLEAN=whatsappServer whatsappClient
 
 TAR=tar
 TARFLAGS=-cvf
-TARNAME=ex4.tar
-TARSRCS=$(LIBSRC) Makefile README Answers.pdf Algorithm.h Block.cpp Block.h CacheFS.cpp FBRAlg.h LFUAlg.h LRUAlg.h myFile.cpp myFile.h
+TARNAME=ex5.tar
+TARSRCS=$(LIBSRC) Makefile README whatsappClient.cpp whatsappServer.cpp Constants.h
 
 all: whatsappServer whatsappClient
 
@@ -36,7 +36,7 @@ TEST : TEST.o
 #	$(RANLIB) $@
 
 clean:
-	$(RM) $(TARGETS) $(OBJ) $(LIBOBJ) $(MORECLEAN) *~ *core
+	$(RM) $(TARGETS) $(OBJ) $(LIBOBJ) $(MORECLEAN) *~ *core *.o
 
 depend:
 	makedepend -- $(CFLAGS) -- $(SRC)

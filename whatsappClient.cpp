@@ -16,7 +16,7 @@ using namespace std;
 
 static string nickname;
 static string ip;
-static string port;
+static int port;
 void handleSysErr(string,int);
 
 bool checkIfErrMsg(string &s){
@@ -29,10 +29,8 @@ bool checkIfErrMsg(string &s){
 }
 int main(int argc , char *argv[])
 {
-    int sock, readVal, legCode;
-    msg_types type;
+    int sock, legCode;
     struct sockaddr_in server;
-    char message[1024];
     int y = 1;
     fd_set active_fd_set;
     if(argc < 4){
@@ -41,7 +39,7 @@ int main(int argc , char *argv[])
     }
     nickname = string(argv[1]);
     ip = string(argv[2]);
-    port = string(argv[3]);
+    port = stoi(argv[3]);
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -51,7 +49,7 @@ int main(int argc , char *argv[])
     }
     server.sin_addr.s_addr = inet_addr(ip.c_str());
     server.sin_family = AF_INET;
-    server.sin_port = htons( stoi(port) );
+    server.sin_port = htons( port );
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
@@ -128,6 +126,8 @@ int main(int argc , char *argv[])
                 cout << "Client name is already in use." << endl;
                 close(sock);
                 exit(1);
+            } else if(msg == SERVER_EXIT_MSG){
+                exit(0);
             }
             if(checkIfErrMsg(msg)){
                 cerr << msg << std::flush;

@@ -171,10 +171,10 @@ int parse_incoming(int sid, string s)
 
         case SEND:
             msg = socket_to_nic[sid] + string(":");
-            for (int i = 2; i < tokens.size(); ++i)
+            for (unsigned int i = 2; i < tokens.size(); ++i)
             {
                 msg_no_user +=tokens[i];
-                if(i+1<tokens.size()) msg_no_user += string(" ");
+                if( i+1 < tokens.size()) msg_no_user += string(" ");
                     msg += string(" ") + tokens[i];
             }
             if(send_to_target(tokens[1], msg, sid) != SUCCESS) {
@@ -217,9 +217,15 @@ int parse_incoming(int sid, string s)
     }
 }
 
+void sendExitToEveryone(){
+    for(auto fd : clientSocks){
+        sendMsg(fd, SERVER_EXIT_MSG);
+    }
+}
+
 
 int main(int argc, char *argv[]) {
-    int socket_desc, new_sock, sd, valread;
+    int socket_desc, new_sock, sd, port;
     struct sockaddr_in address;
     string msg;
     fd_set active_fd_set;
@@ -231,26 +237,28 @@ int main(int argc, char *argv[]) {
     //Create socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_desc == -1) {
-        printf("Could not create socket");
+        handleSysErr("socket", errno);
     }
     puts("Socket created");
-
+    port = stoi(argv[1]);
+    if(port > 10000){
+        std::cerr << "Usage: whatsappServer portNum" << endl;
+        exit(1);
+    }
     //Prepare the sockaddr_in structure
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(8888);
+    address.sin_port = htons(port);
     int yes = 1;
     if (setsockopt(socket_desc, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        perror("setsockopt");
+        handleSysErr("setsockopt", errno);
     }
 
     //Bind
     if (bind(socket_desc, (struct sockaddr *) &address, sizeof(address)) < 0) {
         //print the error message
-        perror("bind failed. Error");
-        return 1;
+        handleSysErr("bind", errno);
     }
-    puts("bind done");
 
     //Listen
     listen(socket_desc, 5);
@@ -283,6 +291,7 @@ int main(int argc, char *argv[]) {
             std::getline(std::cin, line);
             if(line == exit_string){
                 cout << "EXIT command is typed: server is shutting down" << endl;
+                sendExitToEveryone();
                 exit(0);
             }
         }

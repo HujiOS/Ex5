@@ -58,7 +58,7 @@ int main(int argc , char *argv[])
     }
     if(is_msg_legal(HELLO_MSG + " " + nickname, nickname)== BAD_HELLO)
     {
-        cout << "Client name is already in use." << endl;
+        cout << "Illegal name" << endl;
         close(sock);
         exit(1);
     }

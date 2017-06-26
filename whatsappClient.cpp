@@ -58,7 +58,7 @@ int main(int argc , char *argv[])
     }
     if(is_msg_legal(HELLO_MSG + " " + nickname, nickname) == BAD_HELLO)
     {
-        cout << "Client name is already in use." << endl;
+        cout << "Illegal name" << endl;
         close(sock);
         exit(1);
     }
@@ -114,6 +114,12 @@ int main(int argc , char *argv[])
                         msg  = readMessage(sock);
                     }
                     exit(1);
+                case msg_types::SEND:
+                    if(tokens[1] == nickname)
+                    {
+                        cerr << SEND_ERR_CLIENT;
+                    }
+                    break;
                 default:
                     break;
             }

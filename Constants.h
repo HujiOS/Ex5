@@ -44,7 +44,7 @@ using namespace std;
 #define SEND_SUCC_USER string("Sent successfully") + MSG_END
 #define WHO_ERR ERROR_MSG + string(" failed to recieve list of connected clients") + MSG_END
 #define EXIT_MSG "Unregistered successfully" + MSG_END
-#define SERVER_EXIT_MSG string("Unregistered successfully") + MSG_END
+#define SERVER_EXIT_MSG string("Server Closing") + MSG_END
 #define USER_IN_USE "Username in use" + MSG_END
 #define ERROR_SYMBOL string("WHOLETTHEDOGSOUTWHOWHOWHOWHOWHO")
 

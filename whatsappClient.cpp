@@ -114,6 +114,12 @@ int main(int argc , char *argv[])
                         msg  = readMessage(sock);
                     }
                     exit(1);
+                case msg_types::SEND:
+                    if(tokens[1] == nickname)
+                    {
+                        cerr << SEND_ERR_CLIENT;
+                    }
+                    break;
                 default:
                     break;
             }

@@ -117,7 +117,7 @@ int main(int argc , char *argv[])
                 case msg_types::SEND:
                     if(tokens[1] == nickname)
                     {
-                        cerr << SEND_ERR_CLIENT;
+//                        cerr << SEND_ERR_CLIENT; handled in switch(legCode)
                     }
                     break;
                 default:

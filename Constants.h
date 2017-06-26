@@ -205,14 +205,11 @@ int sendErrMsg(int socket, string msg) {
 
 int confirmWithTimeout(int socket){
     fd_set set;
-    struct timeval timeout;
     char tBuff[256];
     int rv, rb;
     FD_ZERO(&set); /* clear the set */
     FD_SET(socket, &set); /* add our file descriptor to the set */
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 10000;
-    rv = select(socket + 1 , &set, NULL, NULL, &timeout);
+    rv = select(socket + 1 , &set, NULL, NULL, NULL);
     if(rv == -1){
         handleSysErr("select",errno);
     }

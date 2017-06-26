@@ -56,7 +56,7 @@ int main(int argc , char *argv[])
         handleSysErr("connect",errno);
         return 1;
     }
-    if(is_msg_legal(HELLO_MSG + " " + nickname, nickname)== BAD_HELLO)
+    if(is_msg_legal(HELLO_MSG + " " + nickname, nickname) == BAD_HELLO)
     {
         cout << "Client name is already in use." << endl;
         close(sock);

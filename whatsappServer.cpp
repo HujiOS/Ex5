@@ -239,7 +239,6 @@ int main(int argc, char *argv[]) {
     if (socket_desc == -1) {
         handleSysErr("socket", errno);
     }
-    puts("Socket created");
     port = stoi(argv[1]);
     if(port > 10000){
         std::cerr << "Usage: whatsappServer portNum" << endl;
